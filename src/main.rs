@@ -11,10 +11,12 @@ use services::response_handler::Response;
 async fn main() {
     let authorization = Token::get_access_token().await.unwrap();
     let user_token = Token::get_user_token();
+    let mut request = Request::new(authorization, user_token);
+    request.get_user_storefront().await;
 
     let url = "https://amp-api.music.apple.com/v1/catalog/hk/songs/1729188121?include[songs]=albums,lyrics,syllable-lyrics&l=zh-Hant-HK";
 
-    let headers = create_header(&authorization, &user_token);
+    let headers = request.create_header();
     let client = Client::builder()
         .default_headers(headers)
         .build()
@@ -29,11 +31,46 @@ async fn main() {
     Response::create_json_file(&output_string);
 }
 
-fn create_header(authorization: &str, user_token: &str) -> HeaderMap {
-    let mut headers = header::HeaderMap::new();
-    headers.insert("origin", "https://music.apple.com".parse().unwrap());
-    headers.insert("Authorization", authorization.parse().unwrap());
-    headers.insert("Media-User-Token", user_token.parse().unwrap());
-    headers
+struct Request {
+    authorization: String,
+    user_token: String,
+    storefront: String,
 }
 
+impl Request {
+    fn new(authorization: String, user_token: String) -> Self {
+        Self {
+            authorization,
+            user_token,
+            storefront: String::new(),
+        }
+    }
+    
+    fn create_header(&mut self) -> HeaderMap {
+        let mut headers = header::HeaderMap::new();
+        headers.insert("origin", "https://music.apple.com".parse().unwrap());
+        headers.insert("Authorization", self.authorization.parse().unwrap());
+        headers.insert("Media-User-Token", self.user_token.parse().unwrap());
+        headers
+    }
+
+    async fn get_user_storefront(&mut self) {
+        let headers = self.create_header();
+        let client = Client::builder()
+            .default_headers(headers)
+            .build()
+            .unwrap();
+
+        let res = client.get("https://api.music.apple.com/v1/me/storefront").send().await.unwrap();
+        let res_string = res.text().await.unwrap();
+        let user_storefront: UserStorefront = serde_json::from_str(&res_string).unwrap();
+        self.storefront = match user_storefront.data.first() {
+            Some(data) => {
+                data.id.to_owned()
+            }
+            None =>  {
+                panic!("Can't found user storefront")
+            }
+        }
+    }
+}
