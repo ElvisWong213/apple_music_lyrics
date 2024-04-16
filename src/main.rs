@@ -1,9 +1,12 @@
 mod models;
 mod services;
 
+use core::panic;
+
 use reqwest::header::HeaderMap;
 use reqwest::{header, Client};
 use models::lyric_json::Lyrics;
+use models::user_storefront::UserStorefront;
 use services::token_handler::Token;
 use services::response_handler::Response;
 
