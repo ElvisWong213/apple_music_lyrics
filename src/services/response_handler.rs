@@ -1,6 +1,6 @@
 use crate::models::apple_music::AppleMusic;
 use crate::models::synced_lyric_xml::SynedLyric;
-use crate::models::lyric_json::{Line, Lyrics, Chunk};
+use crate::models::lyric_json::{Line, Lyrics, Word};
 use std::{fs::File, io::Write};
 
 pub struct Response {}
@@ -28,8 +28,18 @@ impl Response {
                 let mut line: Line = Line::new(p.begin, p.end); 
                 for span in p.span {
                     // println!("{:}, {:}, {:}", span.begin, span.end, span.word);
-                    let chunk: Chunk = Chunk::new(span.begin, span.end, span.word);
-                    line.add_chunk(chunk);
+                    match span.span {
+                        Some(background) => {
+                            for word in background {
+                                let word: Word = Word::new(word.begin.unwrap(), word.end.unwrap(), word.word.unwrap());
+                                line.add_background(word);
+                            }
+                        }
+                        None => {
+                            let word: Word = Word::new(span.begin.unwrap(), span.end.unwrap(), span.word.unwrap());
+                            line.add_words(word);
+                        },
+                    }
                 }
                 lyrics.add_line(line);
             }

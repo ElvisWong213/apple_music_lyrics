@@ -9,11 +9,12 @@ pub struct Lyrics {
 pub struct Line {
     begin: String,
     end: String,
-    chunks: Vec<Chunk>,
+    words: Vec<Word>,
+    background: Vec<Word>,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct Chunk {
+pub struct Word {
     begin: String,
     end: String,
     text: String,
@@ -36,16 +37,21 @@ impl Line {
         Self {
             begin,
             end,
-            chunks: Vec::new() 
+            words: Vec::new(),
+            background: Vec::new()
         }
     }
 
-    pub fn add_chunk(&mut self, chunk: Chunk) {
-        self.chunks.push(chunk);
+    pub fn add_words(&mut self, word: Word) {
+        self.words.push(word);
+    }
+
+    pub fn add_background(&mut self, word: Word) {
+        self.background.push(word);
     }
 }
 
-impl Chunk {
+impl Word {
     pub fn new(begin: String, end: String, text: String) -> Self {
         Self {
             begin,

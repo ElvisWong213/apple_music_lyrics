@@ -28,9 +28,10 @@ pub struct P {
 #[derive(Serialize, Deserialize)]
 pub struct Span {
     #[serde(rename = "@begin")]
-    pub begin: String,
+    pub begin: Option<String>,
     #[serde(rename = "@end")]
-    pub end: String,
+    pub end: Option<String>,
     #[serde(rename = "$text")]
-    pub word: String,
+    pub word: Option<String>,
+    pub span: Option<Vec<Span>>,
 }

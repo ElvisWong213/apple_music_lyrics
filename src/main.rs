@@ -17,7 +17,7 @@ async fn main() {
     let mut request = Request::new(authorization, user_token);
     request.get_user_storefront().await;
 
-    let url = "https://amp-api.music.apple.com/v1/catalog/hk/songs/1729188121?include[songs]=albums,lyrics,syllable-lyrics&l=zh-Hant-HK";
+    let url = "https://amp-api.music.apple.com/v1/catalog/hk/songs/1734500896?include[songs]=albums,lyrics,syllable-lyrics";
 
     let headers = request.create_header();
     let client = Client::builder()
@@ -25,7 +25,17 @@ async fn main() {
         .build()
         .unwrap();
 
-    let res = client.get(url).send().await.unwrap();
+    let res = match client.get(url).send().await {
+        Ok(r) => {
+            if r.status() != 200 {
+                panic!("Invalid response: {:}", r.status())
+            }
+            r
+        },
+        Err(error) => {
+           panic!("{:}", error.to_string()); 
+        }
+    };
     let res_string = res.text().await.unwrap();
 
     let lyrics: Lyrics = Response::extract_lyrics(&res_string).unwrap();
