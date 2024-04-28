@@ -10,7 +10,6 @@ impl Response {
     pub(crate) fn create_json_file(data: &str) {
         let mut file = File::create("lyric.json").unwrap();
         file.write_all(data.as_bytes()).expect("Unable write data to file");
-        println!("file create successfully")
     }
     
     pub(crate) fn extract_lyrics(text: &str) -> Result<Lyrics, String> {
