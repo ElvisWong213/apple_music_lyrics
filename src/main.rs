@@ -2,6 +2,7 @@ mod models;
 mod services;
 
 use core::panic;
+use std::io::stdin;
 
 use reqwest::header::HeaderMap;
 use reqwest::{header, Client};
@@ -9,6 +10,7 @@ use models::lyric_json::Lyrics;
 use models::user_storefront::UserStorefront;
 use services::token_handler::Token;
 use services::response_handler::Response;
+use services::apple_music_url::URL;
 
 #[tokio::main]
 async fn main() {
@@ -17,7 +19,21 @@ async fn main() {
     let mut request = Request::new(authorization, user_token);
     request.get_user_storefront().await;
 
-    let url = "https://amp-api.music.apple.com/v1/catalog/hk/songs/1734500896?include[songs]=albums,lyrics,syllable-lyrics";
+    let mut user_url_input: String = String::new();
+    println!("Enter song url: ");
+    stdin().read_line(&mut user_url_input).unwrap();
+    user_url_input = match user_url_input.strip_suffix("\n") {
+        Some(url) => url.to_string(),
+        None => user_url_input
+    };
+    if user_url_input.is_empty() {
+        panic!("URL is empty");
+    }
+    let song_id = URL::get_song_id(&user_url_input);
+    if song_id.is_empty() {
+       panic!("Cannot found song id"); 
+    }
+    let url = URL::create_lyrics_url(&song_id, &request.storefront);
 
     let headers = request.create_header();
     let client = Client::builder()
