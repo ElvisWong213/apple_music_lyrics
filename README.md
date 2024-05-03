@@ -2,7 +2,7 @@
 
 ## About This Project
 
-Get lyrics for Apple Music
+Get lyrics from Apple Music
 
 ## Framework Used
 - [dotenv](https://github.com/dotenv-rs/dotenv) 0.15
