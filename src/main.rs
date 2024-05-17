@@ -5,7 +5,7 @@ use reqwest::Client;
 use core::panic;
 use std::io::stdin;
 
-use models::lyric_json::Lyrics;
+use models::lyric_json::LyricsJSON;
 use services::token_handler::Token;
 use services::response_handler::Response;
 use services::apple_music_url::Request;
@@ -66,7 +66,7 @@ async fn main() {
     println!("Get lyrics: Done!");
 
     println!("Parsering lyrics...");
-    let lyrics: Lyrics = Response::extract_lyrics(&res_string).unwrap();
+    let lyrics: LyricsJSON = Response::extract_lyrics(&res_string).unwrap();
     let output_string = serde_json::to_string(&lyrics).unwrap();
     println!("Parsering lyrics: Done!");
 

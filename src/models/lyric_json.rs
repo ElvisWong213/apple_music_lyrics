@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct Lyrics {
+pub struct LyricsJSON {
     lines: Vec<Line>,
 }
 
@@ -20,7 +20,7 @@ pub struct Word {
     text: String,
 }
 
-impl Lyrics {
+impl LyricsJSON {
     pub fn new() -> Self {
         Self { 
             lines: Vec::new() 

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename = "tt")]
-pub struct SynedLyricXML {
+pub struct LyricXML {
     pub body: Body,
 }
 
@@ -22,16 +22,7 @@ pub struct P {
     pub begin: String,
     #[serde(rename = "@end")]
     pub end: String,
-    pub span: Vec<Span>,
+    #[serde(rename = "$text")]
+    pub line: String,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct Span {
-    #[serde(rename = "@begin")]
-    pub begin: Option<String>,
-    #[serde(rename = "@end")]
-    pub end: Option<String>,
-    #[serde(rename = "$text")]
-    pub word: Option<String>,
-    pub span: Option<Vec<Span>>,
-}

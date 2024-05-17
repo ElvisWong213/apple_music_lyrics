@@ -14,6 +14,7 @@ pub struct AppleMusicData {
 #[serde(rename_all = "kebab-case")]
 pub struct Relationships {
     pub syllable_lyrics: Lyrics,
+    pub lyrics: Lyrics,
 }
 
 #[derive(Serialize, Deserialize)]
