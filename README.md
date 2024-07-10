@@ -33,7 +33,7 @@ If you are running it for the first time, you will be prompted to enter your App
 
 ## Response JSON File Structure
 
-```
+```json
 {
     "lines": [
         {
