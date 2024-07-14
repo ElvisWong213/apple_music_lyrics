@@ -14,7 +14,7 @@ impl Response {
         file.write_all(data.as_bytes()).expect("Unable write data to file");
     }
     
-    pub(crate) fn extract_lyrics(text: &str) -> Result<LyricsJSON, String> {
+    pub(crate) fn extract_lyrics(text: &str, space: bool) -> Result<LyricsJSON, String> {
         let mut lyrics = LyricsJSON::new();
         let response_json: AppleMusic = serde_json::from_str(text).or_else(|error| {
             Err(error.to_string())
@@ -27,8 +27,11 @@ impl Response {
             Err(error)
         })?;
 
-        // Self::convert_to_json(&synced_lyric_xml, &mut lyrics);
-        Self::convert_formated_data_to_json(&synced_lyric_xml, &lyric_xml, &mut lyrics);
+        if space {
+            Self::convert_to_json_with_space(&synced_lyric_xml, &lyric_xml, &mut lyrics);
+        } else {
+            Self::convert_to_json(&synced_lyric_xml, &mut lyrics);
+        }
     
         Ok(lyrics)
     }
@@ -58,13 +61,13 @@ impl Response {
         }
     }
 
-    fn convert_formated_data_to_json(synced_lyric_xml: &SynedLyricXML, lyric_xml: &LyricXML, lyrics: &mut LyricsJSON) {
+    fn convert_to_json_with_space(synced_lyric_xml: &SynedLyricXML, lyric_xml: &LyricXML, lyrics: &mut LyricsJSON) {
         let synced_lyric_array = &synced_lyric_xml.body.div;
         let lyric_array = &lyric_xml.body.div;
-        for (i_div, div) in synced_lyric_array.iter().enumerate() {
-            for (i_p, p) in div.p.iter().enumerate() {
+        for (div_index, div) in synced_lyric_array.iter().enumerate() {
+            for (p_index, p) in div.p.iter().enumerate() {
                 let mut line: Line = Line::new(p.begin.clone(), p.end.clone()); 
-                let lyric_chars: Vec<char> = lyric_array[i_div].p[i_p].line.clone().chars().collect();
+                let lyric_chars: Vec<char> = lyric_array[div_index].p[p_index].line.clone().chars().collect();
                 let mut lyric_char_index: usize = 0;
                 for span in &p.span {
                     let span = span.clone();

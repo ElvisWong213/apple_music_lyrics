@@ -65,8 +65,26 @@ async fn main() {
     let res_string = res.text().await.unwrap();
     println!("Get lyrics: Done!");
 
+
+    let mut user_input = String::new();
+    println!("Add space to lyrics? Y/N");
+    stdin().read_line(&mut user_input).unwrap();
+    user_input = match user_input.strip_suffix("\n") {
+        Some(result) => result.to_string(),
+        None => user_input
+    };
+
+    let add_space: bool = match user_input.as_str() {
+        "Y" | "y" => true,
+        "N" | "n" => false,
+        _ => {
+            println!("Invalid input");
+            false
+        }
+    };
+
     println!("Parsering lyrics...");
-    let lyrics: LyricsJSON = Response::extract_lyrics(&res_string).unwrap();
+    let lyrics: LyricsJSON = Response::extract_lyrics(&res_string, add_space).unwrap();
     let output_string = serde_json::to_string(&lyrics).unwrap();
     println!("Parsering lyrics: Done!");
 
