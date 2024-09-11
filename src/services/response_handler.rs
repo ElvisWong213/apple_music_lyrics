@@ -9,6 +9,7 @@ pub struct Response {}
 
 impl Response {
     
+    /// Create and save data to json file
     pub(crate) fn create_json_file(data: &str) {
         let mut file = File::create("lyric.json").unwrap();
         file.write_all(data.as_bytes()).expect("Unable write data to file");
@@ -16,16 +17,10 @@ impl Response {
     
     pub(crate) fn extract_lyrics(text: &str, space: bool) -> Result<LyricsJSON, String> {
         let mut lyrics = LyricsJSON::new();
-        let response_json: AppleMusic = serde_json::from_str(text).or_else(|error| {
-            Err(error.to_string())
-        })?;
+        let response_json: AppleMusic = serde_json::from_str(text).map_err(|error| error.to_string())?;
     
-        let synced_lyric_xml: SynedLyricXML = Self::extract_syned_lyric_xml(&response_json).or_else(|error| {
-            Err(error)
-        })?;
-        let lyric_xml: LyricXML = Self::extract_lyric_xml(&response_json).or_else(|error| {
-            Err(error)
-        })?;
+        let synced_lyric_xml: SynedLyricXML = Self::extract_syned_lyric_xml(&response_json)?;
+        let lyric_xml: LyricXML = Self::extract_lyric_xml(&response_json)?;
 
         if space {
             Self::convert_to_json_with_space(&synced_lyric_xml, &lyric_xml, &mut lyrics);
@@ -36,6 +31,7 @@ impl Response {
         Ok(lyrics)
     }
 
+    /// Convert syned lyrics xml to json format
     fn convert_to_json(synced_lyric_xml: &SynedLyricXML, lyrics: &mut LyricsJSON) {
         let synced_lyric_array = &synced_lyric_xml.body.div;
         for div in synced_lyric_array {
@@ -61,6 +57,7 @@ impl Response {
         }
     }
 
+    /// Convert syned lyrics xml to json format with space after space
     fn convert_to_json_with_space(synced_lyric_xml: &SynedLyricXML, lyric_xml: &LyricXML, lyrics: &mut LyricsJSON) {
         let synced_lyric_array = &synced_lyric_xml.body.div;
         let lyric_array = &lyric_xml.body.div;
@@ -95,7 +92,8 @@ impl Response {
         }
     }
 
-    fn formatter(synced_lyric_chars: Vec<char>, lyric_chars: &Vec<char>, lyric_char_index: &mut usize, word: &mut String) {
+    /// Add space to after word
+    fn formatter(synced_lyric_chars: Vec<char>, lyric_chars: &[char], lyric_char_index: &mut usize, word: &mut String) {
         for c in synced_lyric_chars {
             if *lyric_char_index >= lyric_chars.len() {
             println!("{:}", word);
@@ -115,6 +113,7 @@ impl Response {
         }
     }
     
+    /// Extract syned lyric xml response
     fn extract_syned_lyric_xml(json: &AppleMusic) -> Result<SynedLyricXML, String> {
         let data = match json.data.first() {
             Some(data) => data,
@@ -126,7 +125,7 @@ impl Response {
             }
             None => { Err("empty data".to_string())? } 
         };
-        let output: SynedLyricXML = match quick_xml::de::from_str(&ttml) {
+        let output: SynedLyricXML = match quick_xml::de::from_str(ttml) {
             Ok(data) => data,
             Err(error) => {
                 Err(error.to_string())?
@@ -135,6 +134,7 @@ impl Response {
         Ok(output)
     }
 
+    /// Extract lyric xml response
     fn extract_lyric_xml(json: &AppleMusic) -> Result<LyricXML, String> {
         let data = match json.data.first() {
             Some(data) => data,
@@ -146,7 +146,7 @@ impl Response {
             }
             None => { Err("empty data".to_string())? } 
         };
-        let output: LyricXML = match quick_xml::de::from_str(&ttml) {
+        let output: LyricXML = match quick_xml::de::from_str(ttml) {
             Ok(data) => data,
             Err(error) => {
                 Err(error.to_string())?

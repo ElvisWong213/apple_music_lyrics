@@ -23,7 +23,7 @@ impl Token {
         let mut user_input = String::new();
         println!("Enter user token: ");
         stdin().read_line(&mut user_input).unwrap();
-        user_input = match user_input.strip_suffix("\n") {
+        user_input = match user_input.strip_suffix('\n') {
             Some(result) => result.to_string(),
             None => user_input
         };
@@ -33,16 +33,13 @@ impl Token {
         user_input
     }
     
+    /// Get apple access token form web ui
     pub(crate) async fn get_access_token() -> Result<String, String> {
-        let res = reqwest::get("https://music.apple.com").await.or_else(|error| {
-            Err(error.to_string())
-        })?;
+        let res = reqwest::get("https://music.apple.com").await.map_err(|error| error.to_string())?;
         if res.status().as_u16() != 200 {
             Err("Unable to get music.apple.com".to_string())?
         }
-        let res_text = res.text().await.or_else(|error| {
-            Err(error.to_string())
-        })?;
+        let res_text = res.text().await.map_err(|error| error.to_string())?;
         
         let js_re = Regex::new(r#"(?<=index)(.*?)(?=\.js")"#).unwrap();
         let js_file = js_re.find(&res_text).unwrap().unwrap().as_str();
