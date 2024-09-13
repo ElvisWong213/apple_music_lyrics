@@ -29,7 +29,7 @@ async fn main() {
     let mut user_url_input: String = String::new();
     println!("Enter song url: ");
     stdin().read_line(&mut user_url_input).unwrap();
-    user_url_input = match user_url_input.strip_suffix("\n") {
+    user_url_input = match user_url_input.strip_suffix('\n') {
         Some(url) => url.to_string(),
         None => user_url_input
     };
@@ -65,31 +65,51 @@ async fn main() {
     let res_string = res.text().await.unwrap();
     println!("Get lyrics: Done!");
 
-
-    let mut user_input = String::new();
-    println!("Add space to lyrics? Y/N");
-    stdin().read_line(&mut user_input).unwrap();
-    user_input = match user_input.strip_suffix("\n") {
+    let mut export_type: String = String::new();
+    println!("Export file type: JSON / LRC");
+    stdin().read_line(&mut export_type).unwrap();
+    export_type.make_ascii_lowercase();
+    export_type = match export_type.strip_suffix('\n') {
         Some(result) => result.to_string(),
-        None => user_input
-    };
-
-    let add_space: bool = match user_input.as_str() {
-        "Y" | "y" => true,
-        "N" | "n" => false,
-        _ => {
-            println!("Invalid input");
-            false
-        }
+        None => export_type
     };
 
     println!("Parsering lyrics...");
-    let lyrics: LyricsJSON = Response::extract_lyrics(&res_string, add_space).unwrap();
-    let output_string = serde_json::to_string(&lyrics).unwrap();
+    let output_string: String = match export_type.as_str() {
+        "json" => {
+            let mut user_input = String::new();
+            println!("Add space to lyrics? Y/N");
+            stdin().read_line(&mut user_input).unwrap();
+            user_input = match user_input.strip_suffix('\n') {
+                Some(result) => result.to_string(),
+                None => user_input
+            };
+
+            let add_space: bool = match user_input.as_str() {
+                "Y" | "y" => true,
+                "N" | "n" => false,
+                _ => {
+                    println!("Invalid input");
+                    false
+                }
+            };
+
+            let lyrics: LyricsJSON = Response::extract_lyrics_to_json(&res_string, add_space).unwrap();
+            serde_json::to_string(&lyrics).unwrap()
+        },
+        "lrc" => {
+            Response::extract_lyrics_to_lrc(&res_string).unwrap()
+        },
+        _ => {
+            println!("Invalid file type");
+            return;
+        }
+    };
     println!("Parsering lyrics: Done!");
 
+
     println!("Creating file...");
-    Response::create_json_file(&output_string);
+    Response::create_file(&output_string, "lyrics", &export_type);
     println!("Creating file: Done!");
 }
 
